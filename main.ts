@@ -128,6 +128,7 @@ interface ElectronBrowserWindow {
 	setOpacity(opacity: number): void;
 	setIgnoreMouseEvents(ignore: boolean): void;
 	focus(): void;
+	show(): void;
 	blur(): void;
 	isFocused(): boolean;
 	setFocusable(focusable: boolean): void;
@@ -300,7 +301,7 @@ export default class FloatingNotesPlugin extends Plugin {
 
 				this.attachBoundsListener(bw);
 
-				if (opts.focus) bw.focus();
+				if (opts.focus) this.focusPopout();
 
 				this.registerDomEvent(win.win.document, "mouseup", () => {
 					this.savePanelWidths();
@@ -833,14 +834,22 @@ export default class FloatingNotesPlugin extends Plugin {
 
 	private showPopout() {
 		if (!this.popoutBW || this.popoutBW.isDestroyed()) return;
-		void this.rememberPreviousApp();
 		this.clearFocusReleaseTimer();
 		this.popoutBW.setFocusable(true);
 		this.popoutBW.setOpacity(this.clampedOpacity());
 		this.popoutBW.setIgnoreMouseEvents(false);
 		this.popoutBW.setSkipTaskbar(false);
-		this.popoutBW.focus();
 		this.popoutHidden = false;
+		this.focusPopout();
+	}
+
+	private focusPopout() {
+		if (!this.popoutBW || this.popoutBW.isDestroyed() || this.popoutHidden) return;
+		// On macOS focus() alone can leave a background app inactive. show()
+		// activates the app and gives this window keyboard focus.
+		this.popoutBW.show();
+		const leaf = this.hostLeaf();
+		if (leaf) this.app.workspace.setActiveLeaf(leaf, { focus: true });
 	}
 
 	private clearPendingOpen() {
@@ -975,6 +984,9 @@ export default class FloatingNotesPlugin extends Plugin {
 			if (!this.popoutHidden) {
 				this.hidePopout();
 			} else {
+				// Snapshot before opening the note or activating the popout,
+				// so hiding returns to the app that invoked the shortcut.
+				await this.rememberPreviousApp();
 				if (this.settings.reapplyOnShow) {
 					const leaf = this.hostLeaf();
 					if (leaf) await this.applyCapture(leaf);
@@ -1001,6 +1013,8 @@ export default class FloatingNotesPlugin extends Plugin {
 		this.markContentViewAsNavigation();
 
 		await this.applySidePanelSetting();
+		// Note loading may finish after window setup. Focus its editor once ready.
+		this.focusPopout();
 	}
 }
 
