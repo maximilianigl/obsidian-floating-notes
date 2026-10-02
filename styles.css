@@ -50,8 +50,17 @@ body.floating-notes-no-tabs .view-header {
 	app-region: drag;
 }
 
-body.floating-notes-no-tabs .view-header button,
+/* The title container stretches across the header, including its empty space.
+ * Keep that space draggable; only the title, path, and controls handle clicks. */
 body.floating-notes-no-tabs .view-header .view-header-title-container {
+	-webkit-app-region: drag;
+	app-region: drag;
+}
+
+body.floating-notes-no-tabs .view-header button,
+body.floating-notes-no-tabs .view-header .clickable-icon,
+body.floating-notes-no-tabs .view-header .view-header-title,
+body.floating-notes-no-tabs .view-header .view-header-title-parent {
 	-webkit-app-region: no-drag;
 	app-region: no-drag;
 }

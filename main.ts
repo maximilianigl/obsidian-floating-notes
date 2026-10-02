@@ -1185,7 +1185,7 @@ class FloatingNotesSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Hide tab bar")
-			.setDesc("Hide the tab bar in the popout. A thin strip at the top stays draggable so the window can still be moved.")
+			.setDesc("Hide the tab bar in the popout. Drag blank space in the remaining header to move the window.")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.hideTabBar)
