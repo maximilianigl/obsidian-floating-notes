@@ -7,6 +7,8 @@ To install this fork, download `main.js`, `manifest.json`, and `styles.css` from
 
 For local development, run `npm ci`, then `npm test`. Copy the three build files listed above into your vault after each change. The plugin ID and external triggers are unchanged, so existing Raycast shortcuts keep working. The `upstream` Git remote tracks the original repository for future merges.
 
+To explicitly focus the main vault window, run the **Floating Notes: Focus main window** command or call `curl -fsS http://127.0.0.1:51234/focus-main`. This selects the main window even when the floating note was most recently active. It preserves the floating note's visibility.
+
 The original plugin's documentation follows.
 
 [![Obsidian plugin listing](https://img.shields.io/badge/Obsidian-Floating%20Notes-7c3aed?logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/floating-notes)

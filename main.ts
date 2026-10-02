@@ -192,6 +192,11 @@ export default class FloatingNotesPlugin extends Plugin {
 				void this.toggleCapture();
 			},
 		});
+		this.addCommand({
+			id: "focus-main",
+			name: "Focus main window",
+			callback: () => { this.focusMainWindow(); },
+		});
 
 		this.registerObsidianProtocolHandler("floating-notes", () => {
 			void this.toggleCapture();
@@ -653,6 +658,10 @@ export default class FloatingNotesPlugin extends Plugin {
 				void this.toggleCapture();
 				res.writeHead(200, { "Content-Type": "application/json" });
 				res.end(JSON.stringify({ ok: true }));
+			} else if (req.url === "/focus-main") {
+				const ok = this.focusMainWindow();
+				res.writeHead(ok ? 200 : 503, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ ok }));
 			} else {
 				res.writeHead(404);
 				res.end("Not found");
@@ -841,6 +850,15 @@ export default class FloatingNotesPlugin extends Plugin {
 		this.popoutBW.setSkipTaskbar(false);
 		this.popoutHidden = false;
 		this.focusPopout();
+	}
+
+	private focusMainWindow(): boolean {
+		const bw = (window as PopoutWindow).electronWindow;
+		if (!bw || bw.isDestroyed()) return false;
+		bw.show();
+		const leaf = this.app.workspace.getMostRecentLeaf(this.app.workspace.rootSplit);
+		if (leaf) this.app.workspace.setActiveLeaf(leaf, { focus: true });
+		return true;
 	}
 
 	private focusPopout() {

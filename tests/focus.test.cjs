@@ -13,12 +13,21 @@ function fixture() {
 	};
 	vm.runInNewContext(readFileSync(new URL("../main.js", `file://${__filename}`), "utf8"), context);
 	const plugin = Object.create(context.module.exports.default.prototype);
-	const state = { activeApp: "t3code", focused: false, editorFocused: false, shown: 0, loaded: 0 };
+	const state = { activeApp: "t3code", focused: false, editorFocused: false, mainFocused: false, mainEditorFocused: false, shown: 0, loaded: 0 };
 	const leaf = {};
-	plugin.app = { workspace: { layoutReady: true, setActiveLeaf: (target, options) => {
-		assert.equal(target, leaf);
+	const mainLeaf = {};
+	const root = {};
+	context.window.electronWindow = {
+		isDestroyed: () => false,
+		show: () => { state.activeApp = "obsidian"; state.mainFocused = true; state.focused = false; },
+	};
+	plugin.app = { workspace: { layoutReady: true, rootSplit: root, getMostRecentLeaf: (container) => {
+		assert.equal(container, root, "Main-window focus must exclude popout leaves");
+		return mainLeaf;
+	}, setActiveLeaf: (target, options) => {
 		assert.equal(options.focus, true);
-		state.editorFocused = true;
+		if (target === leaf) state.editorFocused = true;
+		else { assert.equal(target, mainLeaf); state.mainEditorFocused = true; }
 	} } };
 	plugin.captureWindow = {};
 	plugin.hostLeaf = () => leaf;
@@ -73,3 +82,16 @@ test("Finishing an open after the popout was hidden does not steal focus back", 
 	assert.equal(state.shown, 0);
 	assert.equal(state.editorFocused, false);
 });
+
+for (const hidden of [true, false]) {
+	test(`Main-window focus works with the floating note ${hidden ? "hidden" : "visible"}`, () => {
+		const { plugin, state } = fixture();
+		plugin.popoutHidden = hidden;
+		state.focused = !hidden;
+		assert.equal(plugin.focusMainWindow(), true);
+		assert.equal(state.mainFocused, true);
+		assert.equal(state.mainEditorFocused, true);
+		assert.equal(state.focused, false);
+		assert.equal(plugin.popoutHidden, hidden);
+	});
+}
