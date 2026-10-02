@@ -1,5 +1,14 @@
 # Floating Notes
 
+This is [Maximilian Igl's fork](https://github.com/maximilianigl/obsidian-floating-notes) of [haotiencheng's plugin](https://github.com/haotiencheng/obsidian-floating-notes).
+Daily capture respects Periodic Notes when its daily notes are enabled, including its folder, date format, and template. Otherwise it uses the built-in Daily Notes settings.
+
+To install this fork, download `main.js`, `manifest.json`, and `styles.css` from this repository's [releases](https://github.com/maximilianigl/obsidian-floating-notes/releases) and copy them into `<vault>/.obsidian/plugins/floating-notes/`. Preserve `data.json` to keep your settings, then reload the plugin or restart Obsidian. Installing or updating from the community store uses the original plugin and replaces the fork.
+
+For local development, run `npm ci`, then `npm test`. Copy the three build files listed above into your vault after each change. The plugin ID and external triggers are unchanged, so existing Raycast shortcuts keep working. The `upstream` Git remote tracks the original repository for future merges.
+
+The original plugin's documentation follows.
+
 [![Obsidian plugin listing](https://img.shields.io/badge/Obsidian-Floating%20Notes-7c3aed?logo=obsidian&logoColor=white)](https://community.obsidian.md/plugins/floating-notes)
 
 A lightweight Obsidian plugin that opens a floating popout window for instant note capture — inspired by [Raycast Notes](https://www.raycast.com/core-features/notes).

@@ -12,6 +12,7 @@ import {
 } from "obsidian";
 import * as http from "http";
 import { execFile } from "child_process";
+import { createDailyNote, getDailyNoteSettings } from "obsidian-daily-notes-interface";
 
 type CaptureMode = "active" | "fixed" | "new" | "daily" | "view";
 
@@ -906,29 +907,14 @@ export default class FloatingNotesPlugin extends Plugin {
 	}
 
 	private async resolveDailyNote() {
-		const internal = (this.app as unknown as {
-			internalPlugins: { getPluginById(id: string): { instance?: { options?: { folder?: string; format?: string; template?: string } } } | null };
-		}).internalPlugins.getPluginById("daily-notes");
-		const opts = internal?.instance?.options ?? {};
+		// Periodic Notes takes precedence when its daily notes are enabled.
+		const opts = getDailyNoteSettings();
 		const format = opts.format || "YYYY-MM-DD";
 		const folder = opts.folder || "";
-		const filename = window.moment().format(format);
+		const date = window.moment();
+		const filename = date.format(format);
 		const path = normalizePath(folder ? `${folder}/${filename}.md` : `${filename}.md`);
-		let file = this.app.vault.getFileByPath(path);
-		if (!file) {
-			const dir = path.substring(0, path.lastIndexOf("/"));
-			if (dir && !this.app.vault.getAbstractFileByPath(dir)) {
-				await this.app.vault.createFolder(dir);
-			}
-			let body = "";
-			if (opts.template) {
-				const tplPath = normalizePath(opts.template.endsWith(".md") ? opts.template : `${opts.template}.md`);
-				const tpl = this.app.vault.getFileByPath(tplPath);
-				if (tpl) body = await this.app.vault.read(tpl);
-			}
-			file = await this.app.vault.create(path, body);
-		}
-		return file;
+		return this.app.vault.getFileByPath(path) ?? await createDailyNote(date);
 	}
 
 	/** Loads whatever the capture mode says into the given leaf. */
